@@ -20,10 +20,10 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
-
+#include "stdio.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "CLCD.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,14 +43,18 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t rx3_data[10];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-
+int _write(int file, char* p, int len)
+{
+	HAL_UART_Transmit(&huart3, p, len, 10);
+	return len;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -87,17 +91,36 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
-
-  /* Initialize interrupts */
-  MX_NVIC_Init();
+  MX_NVIC_Init(); // interrupt 관련 정의되어있는 코드
   /* USER CODE BEGIN 2 */
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
 
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+
+	HAL_UART_Receive_IT(&huart3, &rx3_data, 1);
+
+	CLCD_GPIO_Init();
+	CLCD_Init();
+	CLCD_Puts(0, 0, "Welcome to");
+	CLCD_Puts(0, 1, "M-HIVE");
+	CLCD_Clear();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	uint8_t a = 0;
+	float f = 1.234;
+	uint8_t str[20];
+
   while (1)
   {
+	  sprintf(str, "%f", f+=0.01);
+	  CLCD_Puts(0, 0, str);
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -150,19 +173,21 @@ void SystemClock_Config(void)
   }
 }
 
-/**
-  * @brief NVIC Configuration.
-  * @retval None
-  */
 static void MX_NVIC_Init(void)
 {
   /* USART3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(USART3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(USART3_IRQn);
 }
-
 /* USER CODE BEGIN 4 */
-
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART3)
+	{
+		HAL_UART_Receive_IT(&huart3, &rx3_data, 1);
+		HAL_UART_Transmit(&huart3, &rx3_data, 1, 10);
+	}
+}
 /* USER CODE END 4 */
 
 /**
