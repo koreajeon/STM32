@@ -152,7 +152,10 @@ int main(void)
 	// 시계방향 회전(DC)
 	TIM5->CCR1 = 0;
 	TIM5->CCR4 = 5000; // 0 ~ 10000 값에 비례하게 회전 속도제어
-	  /* USER CODE END 2 */
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	uint8_t a = 0;
 	float f = 1.234;
 	uint8_t str[20];
@@ -160,12 +163,21 @@ int main(void)
 	uint16_t arr = 1000;
 	uint8_t ud_flag = 0;
 	uint16_t dacval = 0;
-	uint8_t eeprom[10] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99};
+	uint8_t eeprom[10] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99}; //v/
 
+	HAL_I2C_Mem_Write(&hi2c1, 0xA0, 0x00, I2C_MEMADD_SIZE_8BIT, &eeprom[0], 10, 10); //v/
 
-	HAL_I2C_Mem_Write(&hi2c1, )
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	HAL_Delay(3); //v/
+
+	for(int i = 0; i<10; i++) eeprom[i] = 0x00; //v/
+
+	HAL_I2C_Mem_Read(&hi2c1, 0xA0, 0x00, I2C_MEMADD_SIZE_8BIT, &eeprom[0], 10, 10); //v/
+
+	sprintf(str, "%02x %02x %02x %02x %02x", eepron[0], eepron[1], eepron[2], eepron[3], eepron[4]); //v/
+	CLCD_Puts(0, 0, str); //v/
+	sprintf(str, "%02x %02x %02x %02x %02x", eepron[5], eepron[6], eepron[7], eepron[8], eepron[9]); //v/
+	CLCD_pits(0, 1, str); //v/
+
   while (1)
   {
     /* USER CODE END WHILE */
